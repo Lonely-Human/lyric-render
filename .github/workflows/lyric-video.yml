@@ -42,7 +42,8 @@ jobs:
           CDN_API_BASE_URL: ${{ vars.CDN_API_BASE_URL || 'https://cdn.patrickbotz.com' }}
           CDN_API_KEY: ${{ secrets.CDN_API_KEY }}
         run: |
-          node scripts/lyric-video-worker.js | tee render.log
+          node scripts/lyric-video-worker.js > render.log 2>&1
+          cat render.log
           echo "url=$(grep -o 'RESULT_URL=.*' render.log | head -1 | cut -d= -f2-)" >> "$GITHUB_OUTPUT"
 
       - name: Simpan URL hasil untuk panel
@@ -51,6 +52,10 @@ jobs:
           JOB_ID: ${{ inputs.job_id }}
           RESULT_URL: ${{ steps.render.outputs.url }}
         run: |
+          if [ -z "$RESULT_URL" ]; then
+            echo "::error::Render selesai tapi URL hasil kosong — cek log langkah Render"
+            exit 1
+          fi
           mkdir -p lyric-video-results
           printf '{"jobId":"%s","url":"%s"}\n' "$JOB_ID" "$RESULT_URL" > "lyric-video-results/$JOB_ID.json"
           git config user.name "patrickbotz-bot"
