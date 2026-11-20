@@ -27,22 +27,17 @@ jobs:
         with:
           node-version: "22"
 
-      # Runner ubuntu-latest sudah menyediakan ffmpeg + pustaka cairo/pango.
-      # apt-get update sering menggantung di mirror, jadi hanya jalankan jika
-      # benar-benar belum ada, dengan batas waktu 5 menit.
-      - name: Pastikan ffmpeg tersedia
-        timeout-minutes: 5
-        run: |
-          if command -v ffmpeg >/dev/null 2>&1; then
-            ffmpeg -version | head -1
-          else
-            echo "ffmpeg belum ada, memasang..."
-            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-          fi
-
       # canvas@3 memakai prebuilt binary, jadi tidak perlu libcairo2-dev dll.
       - name: Install node deps
         run: npm install --omit=dev --no-audit --no-fund
+
+      - name: Siapkan ffmpeg statis
+        run: |
+          F="$(node -p "require('ffmpeg-static')")"
+          mkdir -p bin
+          ln -sf "$F" bin/ffmpeg
+          echo "$PWD/bin" >> "$GITHUB_PATH"
+          bin/ffmpeg -version | head -1
 
       - name: Verifikasi modul render
         run: |
