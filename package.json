@@ -2,10 +2,13 @@
   "name": "lyric-render-worker",
   "version": "1.0.0",
   "private": true,
-  "description": "Render-only GitHub Actions worker for WhatsApp lyric-video bot (search & download stay on panel)",
+  "description": "Render-only GitHub Actions worker for WhatsApp lyric-video bot (search & yt-dlp stay on panel)",
   "dependencies": {
     "axios": "^1.10.0",
     "canvas": "^3.2.3",
-    "sharp": "latest"
+    "sharp": "latest",
+    "kuromoji": "^0.1.2",
+    "wanakana": "^5.3.1",
+    "pinyin-pro": "^3.29.5"
   }
 }
