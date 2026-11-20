@@ -45,7 +45,9 @@ jobs:
         run: npm install --omit=dev --no-audit --no-fund
 
       - name: Verifikasi modul render
-        run: node -e "require('canvas'); console.log('canvas OK')"
+        run: |
+          node -e "require('canvas'); console.log('canvas OK')"
+          node -e "const { resolveFont } = require('./lib/lyric-fonts'); console.log('FONT=' + resolveFont('Line Without a Hook', 44, 'bold'))"
 
       - name: Render lyric video
         id: render
