@@ -26,7 +26,8 @@ async function main() {
     await fsp.writeFile(dest, Buffer.from(await r.arrayBuffer()));
   }
 
-  const lyric = require("./lib/lyric-video2");
+  // Path relatif terhadap scripts/ → naik satu level ke lib/
+  const lyric = require("../lib/lyric-video2");
   const outPath = path.join(dir, "lyric-video.mp4");
   await lyric.renderLyricVideoJob(job, audioPath, coverPath, outPath);
 
