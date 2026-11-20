@@ -27,13 +27,25 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install system deps
+      # Runner ubuntu-latest sudah menyediakan ffmpeg + pustaka cairo/pango.
+      # apt-get update sering menggantung di mirror, jadi hanya jalankan jika
+      # benar-benar belum ada, dengan batas waktu 5 menit.
+      - name: Pastikan ffmpeg tersedia
+        timeout-minutes: 5
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          if command -v ffmpeg >/dev/null 2>&1; then
+            ffmpeg -version | head -1
+          else
+            echo "ffmpeg belum ada, memasang..."
+            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          fi
 
+      # canvas@3 memakai prebuilt binary, jadi tidak perlu libcairo2-dev dll.
       - name: Install node deps
-        run: npm ci --omit=dev || npm install --omit=dev
+        run: npm install --omit=dev --no-audit --no-fund
+
+      - name: Verifikasi modul render
+        run: node -e "require('canvas'); console.log('canvas OK')"
 
       - name: Render lyric video
         id: render
@@ -58,7 +70,7 @@ jobs:
           fi
           mkdir -p lyric-video-results
           printf '{"jobId":"%s","url":"%s"}\n' "$JOB_ID" "$RESULT_URL" > "lyric-video-results/$JOB_ID.json"
-          git config user.name "patrickbotz-bot"
+          git config user.name "lyric-render-bot"
           git config user.email "bot@users.noreply.github.com"
           git add "lyric-video-results/$JOB_ID.json"
           git commit -m "lyric-video result $JOB_ID" || true
