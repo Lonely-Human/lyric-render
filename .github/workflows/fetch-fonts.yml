@@ -1,0 +1,36 @@
+name: Fetch Noto Fonts (one-time)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Noto fonts
+        run: |
+          set -euo pipefail
+          mkdir -p lib/font
+          B=https://raw.githubusercontent.com/notofonts
+          curl -fsSL "$B/noto-cjk/main/Sans/OTC/NotoSansCJK-Regular.ttc" -o lib/font/NotoSansCJK-Regular.ttc
+          curl -fsSL "$B/noto-cjk/main/Sans/OTC/NotoSansCJK-Bold.ttc" -o lib/font/NotoSansCJK-Bold.ttc
+          curl -fsSL "$B/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf" -o lib/font/NotoSans-Regular.ttf
+          curl -fsSL "$B/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf" -o lib/font/NotoSans-Bold.ttf
+          for S in Thai Devanagari Bengali Tamil Telugu Arabic Hebrew; do
+            curl -fsSL "$B/noto-fonts/main/hinted/ttf/NotoSans$S/NotoSans$S-Regular.ttf" -o "lib/font/NotoSans$S-Regular.ttf"
+            curl -fsSL "$B/noto-fonts/main/hinted/ttf/NotoSans$S/NotoSans$S-Bold.ttf" -o "lib/font/NotoSans$S-Bold.ttf"
+          done
+          ls -lh lib/font
+
+      - name: Commit fonts
+        run: |
+          git config user.name "lyric-render-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add lib/font
+          git commit -m "add Noto fonts for non-Latin lyric rendering" || true
+          git push
